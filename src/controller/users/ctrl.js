@@ -1,53 +1,108 @@
-const findByTag = (req, res) => {
-  const { tag } = req.query;
-  const people = obj_list.filter((obj) => obj.tags.includes(tag));
+const { runQuery } = require("../../lib/database");
 
-  if (people.length === 0) {
-    res.send('존재하지 않습니다.');
-  } else {
-    res.send(people);
+const getAllUser = async (req, res) => {
+  const sql = 'SELECT nickname FROM user';
+
+  try {
+    const result = await runQuery(sql);
+    return res.status(200).send(result);
+
+  } catch (e) {
+    console.log(e);
+    return res.status(500).send('Internal server error');
   }
 };
 
-const register = (req, res) => {
-  const { name, age } = req.body;
-  obj_list = obj_list.concat({
-    id: id++,
-    name,
-    age,
-  });
-
-  res.send(obj_list);
-};
-
-const updateUser = (req, res) => {
+const findByID = async (req, res) => {
   const { id } = req.params;
-  const { name, age } = req.body;
+  const sql = 'SELECT * FROM user WHERE id = ?';
+  const data = [id];
 
-  idx = obj_list.findIndex((obj) => obj.id === id);
-  if (obj_idx === -1) {
-    res.send('존재하지 않습니다.');
-  } else {
-    obj_list[idx] = { id, name, age };
-    res.send(obj_list);
+  try {
+    const result = await runQuery(sql, data);
+
+    if (result.length === 1) {
+      return res.status(200).send(result[0]);
+    } else{
+      return res.status(400).send("Bad Request");
+    }
+
+  } catch (e) {
+    console.log(e);
+    return res.status(500).send('Internal server error');
   }
 };
 
-const deleteByAge = (req, res) => {
-  const { age } = req.params;
-  const obj = obj_list.find((obj) => obj.age === age);
+const includeNick = async (req, res) => {
+  const { string } = req.body;
 
-  if (obj === undefined) {
-    res.send('존재하지 않습니다.');
-  } else {
-    obj_list = obj_list.filter((obj) => obj.age !== age);
-    res.send(obj);
+  if (!string) {
+    return res.status(400).send('Bad request');}
+
+  const sql = 'SELECT * FROM user WHERE nickname LIKE "%?%"';;
+  const data = [string];
+
+  try {
+    const result = await runQuery(sql, data);
+
+    if (result.length === 0) {
+      return res.status(200).send('empty');
+    } else {
+      return res.status(200).send(result);
+    }
+
+  } catch (e) {
+    console.log(e);
+    return res.status(500).send('Internal server error');
   }
 };
+
+const updateByID = async (req, res) => {
+  const { id } = req.params;
+  const sql = 'UPDATE user SET nickname = "" WHERE id = ?;';
+  const data = [id];
+
+  try {
+    const result = await runQuery(sql, data);
+
+    if (result.affectedRows === 1) {
+      return res.status(200).send('OK');
+    }else{
+        return res.status(400).send("Bad Request");
+      }
+
+  } catch (e) {
+    console.log(e);
+    return res.status(500).send('Internal server error');
+  }
+};
+ 
+const deleteByID = async (req, res) => {
+  const { id } = req.params;
+  const sql = 'DELETE FROM user WHERE id = ?;';
+  const data = [id];
+
+  try {
+    const result = await runQuery(sql, data);
+
+    if (result.affectedRows === 1) {
+      return res.status(200).send('OK');
+    }else{
+        return res.status(400).send("Bad Request");
+      }
+
+  } catch (e) {
+    console.log(e);
+    return res.status(500).send('Internal server error');
+  }
+};
+
+
 
 module.exports = {
-  findByTag,
-  register,
-  updateUser,
-  deleteByAge,
+  getAllUser, 
+  findByID,
+  includeNick,
+  updateByID,
+  deleteByID,
 };
