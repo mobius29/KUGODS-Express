@@ -1,4 +1,5 @@
 const { runQuery } = require("../../lib/database");
+const jwt = require("../../utils/jwt");
 
 const register = async (req, res) => {
   const { username, password, nickname } = req.body;
@@ -35,6 +36,7 @@ const login = async (req, res) => {
     const result = await runQuery(sql, data);
 
     if (result.affectedRows === 1) {
+      const token = jwt.sign(result)
       return res.status(200).send('OK');
     } else {
       return res.status(401).send('Unauthorized');
