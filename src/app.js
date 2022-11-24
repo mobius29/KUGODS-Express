@@ -3,6 +3,7 @@ const router = require('./controller');
 
 const app = express();
 
+// json parsing
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
